@@ -1,0 +1,10 @@
+*.swp
+*.swp
+result
+.terraform*
+*.tfstate
+*.tfstate.*
+*.tfvars
+.env
+nix/configuration.nix
+nix/flake.lock
