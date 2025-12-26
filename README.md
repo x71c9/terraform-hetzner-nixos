@@ -59,6 +59,18 @@ A custom `disko.nix` configuration handles disk partitioning and ensures proper 
 
 The module uses `.nix.tpl` template files to dynamically inject hostname and SSH public key configurations during deployment, enabling immediate SSH access to the deployed server.
 
+## NixOS System Configuration
+
+The deployed NixOS system includes:
+
+- **Base System**: NixOS 25.05 with experimental features (nix-command, flakes) enabled
+- **Security**: SSH-only root access with password authentication disabled, firewall enabled (port 22 only)
+- **Essential Tools**: vim, curl, git pre-installed
+- **Volume Support**: Automatic detection and mounting of Hetzner Cloud volumes using systemd service
+- **Template Variables**: Dynamic hostname and SSH key injection via Terraform templating
+
+The system is configured for immediate SSH access and supports optional volume attachment with automatic mounting at specified mount points.
+
 ## Post-Deployment
 
 After initial deployment, manage the NixOS configuration using:

@@ -50,6 +50,6 @@ output "volume_name" {
 
 output "ssh_command" {
   description = "SSH command to connect to the server"
-  value       = "\n\nssh -i <private_key_path> root@${module.nixos_server.server_ip}\n\n"
+  value       = var.ssh_private_key_path != "" ? "\n\nssh -i ${var.ssh_private_key_path} root@${module.nixos_server.server_ip}\n\n" : "\n\nssh root@${module.nixos_server.server_ip}\n\n"
 }
 
