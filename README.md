@@ -27,10 +27,23 @@ Three example configurations are provided in the `examples/` directory:
 
 To use any example:
 
-1. Copy `.env.example` to `.env` and configure your values
-2. Source the environment: `source .env`
-3. Initialize Terraform: `terraform init`
-4. Apply the configuration: `terraform apply`
+Navigate to the desired example directory:
+```bash
+cd ./examples/basic
+```
+
+Create and configure the environment file:
+```bash
+cp .env.example .env
+vim .env
+```
+
+Source the environment and deploy:
+```bash
+source .env
+terraform init
+terraform apply
+```
 
 ## Implementation Challenges
 
