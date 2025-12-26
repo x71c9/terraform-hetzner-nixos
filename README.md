@@ -80,3 +80,42 @@ nixos-rebuild switch --target-host <server-ip>
 ```
 
 This allows for declarative system management using your preferred NixOS flake configuration.
+
+## Module Settings
+
+### Required Variables
+
+| Variable | Type | Description |
+|----------|------|-------------|
+| `hetzner_cloud_token` | `string` | Hetzner Cloud API Token (sensitive) |
+| `host_name` | `string` | Host configuration name |
+| `ssh_public_key_path` | `string` | SSH public key file path for accessing the server |
+
+### Optional Variables
+
+| Variable | Type | Default | Description |
+|----------|------|---------|-------------|
+| `additional_firewall_rules` | `list(object)` | `[]` | Additional firewall rules beyond SSH (22). Objects contain: `direction`, `port` (optional), `protocol`, `source_ips` |
+| `enable_backups` | `bool` | `false` | Enable automatic backups |
+| `enable_delete_protection` | `bool` | `false` | Enable delete protection (recommended for production) |
+| `labels` | `map(string)` | `{}` | Additional labels for the server |
+| `location` | `string` | `"nbg1"` | Hetzner Cloud location ([available locations](https://registry.terraform.io/providers/hetznercloud/hcloud/latest/docs/resources/server#location-1)) |
+| `server_type` | `string` | `"cx23"` | Hetzner Cloud server type ([available types](https://registry.terraform.io/providers/hetznercloud/hcloud/latest/docs/resources/server#server_type-1)) |
+| `ssh_private_key_path` | `string` | `""` | SSH private key file path for accessing the server |
+| `volume_size` | `number` | `null` | Size of the additional volume in GB (optional) |
+| `volume_mount_point` | `string` | `"/mnt/data"` | Mount point for the additional volume (only used if volume_size is set) |
+
+### Firewall Rules Format
+
+The `additional_firewall_rules` variable accepts a list of objects with the following structure:
+
+```hcl
+additional_firewall_rules = [
+  {
+    direction  = "in"        # Required: "in" or "out"
+    port       = "80"        # Optional: port number or range
+    protocol   = "tcp"       # Required: "tcp", "udp", "icmp", etc.
+    source_ips = ["0.0.0.0/0", "::/0"]  # Required: list of IP addresses/ranges
+  }
+]
+```
