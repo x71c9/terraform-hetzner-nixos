@@ -6,5 +6,6 @@ result
 *.tfstate.*
 *.tfvars
 .env
+
+# Generated configuration file (created by terraform template)
 nix/configuration.nix
-nix/flake.lock

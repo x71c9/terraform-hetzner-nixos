@@ -11,7 +11,9 @@
 
   outputs = { nixpkgs, disko, ... }: {
     nixosConfigurations = {
-      default = nixpkgs.lib.nixosSystem {
+      # This hostname will be dynamically set by terraform
+      # Users should reference this as: flake_path#hostname
+      nixos-server = nixpkgs.lib.nixosSystem {
         system = "x86_64-linux";
         modules = [
           disko.nixosModules.disko

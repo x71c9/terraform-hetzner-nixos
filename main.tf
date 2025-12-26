@@ -2,6 +2,7 @@ locals {
   firewall_name = "${var.host_name}-firewall"
   server_name = "${var.host_name}"
   ssh_key_name = "${var.host_name}-ssh-key"
+  volume_name = "${var.host_name}-volume"
 }
 
 resource "hcloud_firewall" "firewall" {
@@ -30,6 +31,21 @@ resource "hcloud_ssh_key" "ssh_public_key" {
   public_key = file(var.ssh_public_key_path)
 }
 
+resource "hcloud_volume" "volume" {
+  count    = var.volume_size != null ? 1 : 0
+  name     = local.volume_name
+  size     = var.volume_size
+  location = var.location
+  format   = "xfs"
+}
+
+resource "hcloud_volume_attachment" "volume_attachment" {
+  count     = var.volume_size != null ? 1 : 0
+  volume_id = hcloud_volume.volume[0].id
+  server_id = hcloud_server.server.id
+  automount = true
+}
+
 resource "hcloud_server" "server" {
   name               = local.server_name
   image              = "ubuntu-22.04"
@@ -49,8 +65,10 @@ resource "hcloud_server" "server" {
 resource "local_file" "nixos_configuration" {
   
   content = templatefile("${path.module}/nix/configuration.nix.tpl", {
-    hostname       = var.host_name
-    ssh_public_key = trimspace(file(var.ssh_public_key_path))
+    hostname           = var.host_name
+    ssh_public_key     = trimspace(file(var.ssh_public_key_path))
+    volume_size        = var.volume_size
+    volume_mount_point = var.volume_mount_point
   })
   filename = "${path.module}/nix/configuration.nix"
 }
@@ -105,9 +123,9 @@ resource "null_resource" "nixos_deployment" {
         NIXOS_ANYWHERE_ARGS="-i ${var.ssh_private_key_path}"
       fi
       
-      # Use --impure flag because configuration.nix is generated from terraform template
-      # and is not versioned in git, requiring impure mode to access untracked files
-      if ! nix run --impure github:nix-community/nixos-anywhere -- $NIXOS_ANYWHERE_ARGS --flake ${var.flake_path}#${var.host_name} root@${hcloud_server.server.ipv4_address} ; then
+      # Use path: prefix to include untracked files like the generated configuration.nix
+      # which is created by terraform template and not versioned in git
+      if ! nix run github:nix-community/nixos-anywhere -- $NIXOS_ANYWHERE_ARGS --flake path:${var.flake_path}#default root@${hcloud_server.server.ipv4_address} ; then
         echo "ERROR: nixos-anywhere deployment failed!"
         exit 1
       fi

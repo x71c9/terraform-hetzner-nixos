@@ -75,3 +75,15 @@ variable "ssh_private_key_path" {
   default     = ""
 }
 
+variable "volume_size" {
+  description = "Size of the additional volume in GB (optional)"
+  type        = number
+  default     = null
+}
+
+variable "volume_mount_point" {
+  description = "Mount point for the additional volume (only used if volume_size is set)"
+  type        = string
+  default     = "/mnt/data"
+}
+
