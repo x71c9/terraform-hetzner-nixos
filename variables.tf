@@ -21,11 +21,6 @@ variable "enable_delete_protection" {
   default     = false
 }
 
-variable "flake_path" {
-  description = "Path to the NixOS flake configuration directory"
-  type        = string
-  default     = "./nix"
-}
 
 variable "hetzner_cloud_token" {
   description = "Hetzner Cloud API Token"

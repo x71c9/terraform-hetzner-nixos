@@ -34,7 +34,6 @@ module "nixos_server" {
   ssh_public_key_path  = var.ssh_public_key_path
   ssh_private_key_path = var.ssh_private_key_path
   host_name            = "nixos-server"
-  flake_path           = "./nix"
 }
 
 output "server_ip" {
@@ -44,5 +43,5 @@ output "server_ip" {
 
 output "ssh_command" {
   description = "SSH command to connect to the server"
-  value       = "ssh -i <private_key_path> root@${module.nixos_server.server_ip}"
+  value       = var.ssh_private_key_path != "" ? "\n\nssh -i ${var.ssh_private_key_path} root@${module.nixos_server.server_ip}\n\n" : "\n\nssh root@${module.nixos_server.server_ip}\n\n"
 }

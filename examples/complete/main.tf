@@ -1,4 +1,18 @@
+terraform {
+  required_providers {
+    hcloud = {
+      source  = "hetznercloud/hcloud"
+      version = "~> 1.45"
+    }
+  }
+}
+
+provider "hcloud" {
+  token = var.hetzner_cloud_token
+}
+
 module "nixos_server" {
+  source = "../.."
 
   additional_firewall_rules = [
     {
@@ -15,17 +29,14 @@ module "nixos_server" {
     },
     {
       direction  = "in"
-      protocol   = "imcp"
+      protocol   = "icmp"
       source_ips = ["0.0.0.0/0", "::/0"]
     }
   ]
   
-  source = "../.."
-
   enable_backups            = true
-  enable_delete_protection  = true
-  
-  flake_path = "./nix"
+  enable_delete_protection  = false
+
 
   hetzner_cloud_token = var.hetzner_cloud_token
   host_name           = "complete-server"
@@ -36,14 +47,14 @@ module "nixos_server" {
     example     = "complete"
   }
   
-  location    = "nbg1"
+  location = "nbg1"
 
-  server_type = "cx21"
+  server_type = "cx33"
 
-  ssh_public_key_path = "~/.ssh/id_ed25519.pub"
-  ssh_private_key_path = "~/.ssh/id_ed25519"
+  ssh_private_key_path = var.ssh_private_key_path
+  ssh_public_key_path  = var.ssh_public_key_path
   
   volume_mount_point = "/var/lib/data"
-  volume_size        = 20
-  
+  volume_size        = 21
 }
+
