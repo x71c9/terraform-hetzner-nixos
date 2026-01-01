@@ -132,3 +132,33 @@ resource "null_resource" "nixos_deployment" {
     working_dir = path.cwd
   }
 }
+
+resource "null_resource" "download_nixos_config" {
+  count = var.download_nixos_config ? 1 : 0
+
+  provisioner "local-exec" {
+    command = <<EOF
+      # Create nixos-config directory
+      mkdir -p nixos-config
+      
+      # Download the specific git tag version
+      TAG_VERSION=$(git -C ${path.module} describe --tags --exact-match HEAD 2>/dev/null || echo "develop")
+      
+      # Download actual files from git repository
+      curl -s -L "https://raw.githubusercontent.com/x71c9/terraform-hetzner-nixos/$TAG_VERSION/nix/disko.nix" -o nixos-config/disko.nix
+      curl -s -L "https://raw.githubusercontent.com/x71c9/terraform-hetzner-nixos/$TAG_VERSION/nix/hardware-configuration.nix" -o nixos-config/hardware-configuration.nix
+      curl -s -L "https://raw.githubusercontent.com/x71c9/terraform-hetzner-nixos/$TAG_VERSION/nix/flake.nix" -o nixos-config/flake.nix
+      curl -s -L "https://raw.githubusercontent.com/x71c9/terraform-hetzner-nixos/$TAG_VERSION/tmpl/configuration.nix" -o nixos-config/configuration.nix
+      
+      # Replace placeholders in the downloaded files
+      sed -i 's/HOSTNAME/${var.host_name}/g' nixos-config/flake.nix nixos-config/configuration.nix
+      
+      echo "NixOS configuration downloaded to ./nixos-config/"
+      echo "To manage your server, run: nixos-rebuild switch --flake ./nixos-config#${var.host_name} --target-host root@${hcloud_server.server.ipv4_address}"
+    EOF
+    
+    working_dir = path.cwd
+  }
+
+  depends_on = [null_resource.deploy_nixos]
+}

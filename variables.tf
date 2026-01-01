@@ -82,3 +82,9 @@ variable "volume_mount_point" {
   default     = "/mnt/data"
 }
 
+variable "download_nixos_config" {
+  description = "Download NixOS configuration files to local nixos-config/ directory for easy nixos-rebuild usage"
+  type        = bool
+  default     = true
+}
+
