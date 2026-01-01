@@ -83,7 +83,7 @@ The system is configured for immediate SSH access and supports optional volume a
 After initial deployment, manage the NixOS configuration using:
 
 ```bash
-nixos-rebuild switch --target-host <server-ip>
+nixos-rebuild switch --flake .#<hostname> --target-host <server-ip>
 ```
 
 This allows for declarative system management using your preferred NixOS flake configuration.
