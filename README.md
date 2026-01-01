@@ -126,3 +126,38 @@ additional_firewall_rules = [
   }
 ]
 ```
+
+## Outputs
+
+| Output | Type | Description |
+|--------|------|-------------|
+| `server_id` | `string` | The ID of the Hetzner Cloud server |
+| `server_ip` | `string` | The public IPv4 address of the server |
+| `server_ipv6` | `string` | The public IPv6 address of the server |
+| `server_name` | `string` | The name of the server |
+| `server_ipv4_address` | `string` | The public IPv4 address of the server (alias for server_ip) |
+| `ssh_key_id` | `string` | The ID of the SSH key created |
+| `ssh_key_name` | `string` | The name of the SSH key created |
+| `firewall_name` | `string` | The name of the firewall created |
+| `volume_id` | `string` | The ID of the volume (if created, null otherwise) |
+| `volume_name` | `string` | The name of the volume (if created, null otherwise) |
+
+### Example Usage
+
+```hcl
+module "nixos_server" {
+  source = "git::https://github.com/x71c9/terraform-hetzner-nixos.git?ref=v0.1.0"
+  
+  hetzner_cloud_token = var.hetzner_cloud_token
+  host_name          = "my-server"
+  ssh_public_key_path = "~/.ssh/id_rsa.pub"
+}
+
+output "server_public_ip" {
+  value = module.nixos_server.server_ip
+}
+
+output "ssh_command" {
+  value = "ssh root@${module.nixos_server.server_ip}"
+}
+```
