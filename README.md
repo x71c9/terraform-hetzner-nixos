@@ -12,7 +12,7 @@ Pin to a specific version:
 
 ```hcl
 module "nixos_server" {
-  source = "git::https://github.com/x71c9/terraform-hetzner-nixos.git?ref=v0.2.0"
+  source = "git::https://github.com/x71c9/terraform-hetzner-nixos.git?ref=v0.2.1"
   
   hetzner_cloud_token = var.hetzner_cloud_token
   host_name          = "my-server"
@@ -170,7 +170,7 @@ The system is configured for immediate SSH access and supports optional volume a
 
 ```hcl
 module "nixos_server" {
-  source = "git::https://github.com/x71c9/terraform-hetzner-nixos.git?ref=v0.2.0"
+  source = "git::https://github.com/x71c9/terraform-hetzner-nixos.git?ref=v0.2.1"
   
   hetzner_cloud_token = var.hetzner_cloud_token
   host_name          = "my-server"
