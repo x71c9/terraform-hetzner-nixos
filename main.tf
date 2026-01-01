@@ -160,5 +160,5 @@ resource "null_resource" "download_nixos_config" {
     working_dir = path.cwd
   }
 
-  depends_on = [null_resource.deploy_nixos]
+  depends_on = [null_resource.nixos_deployment]
 }
