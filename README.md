@@ -8,14 +8,21 @@ This module automates the deployment of NixOS servers on Hetzner Cloud, which do
 
 ## Usage
 
+Pin to a specific version:
+
 ```hcl
 module "nixos_server" {
-  source = "path/to/this/module"
+  source = "git::https://github.com/x71c9/terraform-hetzner-nixos.git?ref=v0.1.0"
   
-  hetzner_cloud_token   = var.hetzner_cloud_token
-  ssh_public_key_path   = var.ssh_public_key_path
+  hetzner_cloud_token = var.hetzner_cloud_token
+  host_name          = "my-server"
+  ssh_public_key_path = "~/.ssh/id_rsa.pub"
 }
 ```
+
+### Available Versions
+
+Check the [releases page](https://github.com/x71c9/terraform-hetzner-nixos/releases) for all available versions.
 
 ## Examples
 
