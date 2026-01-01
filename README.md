@@ -12,7 +12,7 @@ Pin to a specific version:
 
 ```hcl
 module "nixos_server" {
-  source = "git::https://github.com/x71c9/terraform-hetzner-nixos.git?ref=v0.1.0"
+  source = "git::https://github.com/x71c9/terraform-hetzner-nixos.git?ref=v0.2.0"
   
   hetzner_cloud_token = var.hetzner_cloud_token
   host_name          = "my-server"
@@ -80,13 +80,37 @@ The system is configured for immediate SSH access and supports optional volume a
 
 ## Post-Deployment
 
-After initial deployment, manage the NixOS configuration using:
+After initial deployment, the module automatically downloads NixOS configuration files to `./nixos-config/` (unless `download_nixos_config = false`).
+
+### Managing Your Server
+
+The downloaded configuration includes:
+- `flake.nix` - Flake configuration with your hostname
+- `disko.nix` - Disk partitioning configuration used during deployment
+- `hardware-configuration.nix` - Hardware-specific settings
+- `configuration.nix` - Basic system configuration (customize this file)
+
+To apply configuration changes:
 
 ```bash
-nixos-rebuild switch --flake .#<hostname> --target-host <server-ip>
+cd nixos-config
+# Edit configuration.nix to add packages, services, users, etc.
+nixos-rebuild switch --flake .#<hostname> --target-host root@<server-ip>
 ```
 
-This allows for declarative system management using your preferred NixOS flake configuration.
+This is a starting point to update the remote machine, the `configuration.nix` file is intended to replace with future update of the machine.
+The other files ensure the hardware configuration of the machine.
+
+### Customizing Your Configuration
+
+Edit `nixos-config/configuration.nix` to:
+- Add packages to `environment.systemPackages`
+- Configure services (nginx, postgresql, etc.)
+- Set up users and SSH keys
+- Configure firewall rules
+- Add your own NixOS modules
+
+For more configuration options, visit [NixOS Search](https://search.nixos.org/options).
 
 ## Module Settings
 
@@ -103,6 +127,7 @@ This allows for declarative system management using your preferred NixOS flake c
 | Variable | Type | Default | Description |
 |----------|------|---------|-------------|
 | `additional_firewall_rules` | `list(object)` | `[]` | Additional firewall rules beyond SSH (22). Objects contain: `direction`, `port` (optional), `protocol`, `source_ips` |
+| `download_nixos_config` | `bool` | `true` | Download NixOS configuration files to local nixos-config/ directory for easy nixos-rebuild usage |
 | `enable_backups` | `bool` | `false` | Enable automatic backups |
 | `enable_delete_protection` | `bool` | `false` | Enable delete protection (recommended for production) |
 | `labels` | `map(string)` | `{}` | Additional labels for the server |
@@ -145,7 +170,7 @@ additional_firewall_rules = [
 
 ```hcl
 module "nixos_server" {
-  source = "git::https://github.com/x71c9/terraform-hetzner-nixos.git?ref=v0.1.0"
+  source = "git::https://github.com/x71c9/terraform-hetzner-nixos.git?ref=v0.2.0"
   
   hetzner_cloud_token = var.hetzner_cloud_token
   host_name          = "my-server"
