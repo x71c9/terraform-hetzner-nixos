@@ -52,32 +52,6 @@ terraform init
 terraform apply
 ```
 
-## Implementation Challenges
-
-### Volume Detection
-
-Hetzner Cloud does not provide a consistent naming scheme for attached volumes. The module implements regex-based volume detection to ensure NixOS installation targets the primary disk rather than attached storage volumes.
-
-### Disk Configuration
-
-A custom `disko.nix` configuration handles disk partitioning and ensures proper installation on the correct storage device, preventing accidental installation on attached volumes.
-
-### System Templating
-
-The module uses `.nix.tpl` template files to dynamically inject hostname and SSH public key configurations during deployment, enabling immediate SSH access to the deployed server.
-
-## NixOS System Configuration
-
-The deployed NixOS system includes:
-
-- **Base System**: NixOS 25.05 with experimental features (nix-command, flakes) enabled
-- **Security**: SSH-only root access with password authentication disabled, firewall enabled (port 22 only)
-- **Essential Tools**: vim, curl, git pre-installed
-- **Volume Support**: Automatic detection and mounting of Hetzner Cloud volumes using systemd service
-- **Template Variables**: Dynamic hostname and SSH key injection via Terraform templating
-
-The system is configured for immediate SSH access and supports optional volume attachment with automatic mounting at specified mount points.
-
 ## Post-Deployment
 
 After initial deployment, the module automatically downloads NixOS configuration files to `./nixos-config/` (unless `download_nixos_config = false`).
@@ -98,7 +72,7 @@ cd nixos-config
 nixos-rebuild switch --flake .#<hostname> --target-host root@<server-ip>
 ```
 
-This is a starting point to update the remote machine, the `configuration.nix` file is intended to replace with future update of the machine.
+This is a starting point to update the remote machine, the `configuration.nix` file is intended to be replaced with future update of the machine.\ 
 The other files ensure the hardware configuration of the machine.
 
 ### Customizing Your Configuration
@@ -165,6 +139,32 @@ additional_firewall_rules = [
 | `ssh_key_name` | `string` | The name of the SSH key created |
 | `volume_id` | `string` | The ID of the volume (if created, null otherwise) |
 | `volume_name` | `string` | The name of the volume (if created, null otherwise) |
+
+## Implementation Challenges
+
+### Volume Detection
+
+Hetzner Cloud does not provide a consistent naming scheme for attached volumes. The module implements regex-based volume detection to ensure NixOS installation targets the primary disk rather than attached storage volumes.
+
+### Disk Configuration
+
+A custom `disko.nix` configuration handles disk partitioning and ensures proper installation on the correct storage device, preventing accidental installation on attached volumes.
+
+### System Templating
+
+The module uses `.nix.tpl` template files to dynamically inject hostname and SSH public key configurations during deployment, enabling immediate SSH access to the deployed server.
+
+## NixOS System Configuration
+
+The deployed NixOS system includes:
+
+- **Base System**: NixOS 25.05 with experimental features (nix-command, flakes) enabled
+- **Security**: SSH-only root access with password authentication disabled, firewall enabled (port 22 only)
+- **Essential Tools**: vim, curl, git pre-installed
+- **Volume Support**: Automatic detection and mounting of Hetzner Cloud volumes using systemd service
+- **Template Variables**: Dynamic hostname and SSH key injection via Terraform templating
+
+The system is configured for immediate SSH access and supports optional volume attachment with automatic mounting at specified mount points.
 
 ### Example Usage
 
