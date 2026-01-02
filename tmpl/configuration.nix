@@ -13,15 +13,13 @@
 # For more configuration options, see:
 # https://search.nixos.org/options
 
-{ config, pkgs, ... }:
+{ pkgs, ... }:
 
 {
-  # Basic system configuration
-  system.stateVersion = "25.05";
-
-  # Enable experimental features for flakes
-  nix.settings.experimental-features = [ "nix-command" "flakes" ];
-
+  imports = [
+    ./hardware-configuration.nix
+    ./disko.nix
+  ];
   # Basic packages - add your own here
   environment.systemPackages = with pkgs; [
     vim
@@ -30,15 +28,6 @@
     htop
     # Add more packages as needed
   ];
-
-  # SSH configuration
-  services.openssh = {
-    enable = true;
-    settings = {
-      PasswordAuthentication = false;
-      PermitRootLogin = "yes";
-    };
-  };
 
   # Firewall configuration
   networking.firewall = {
@@ -50,13 +39,20 @@
   # Hostname will be set by the deployment
   networking.hostName = "HOSTNAME";
 
-  # Example service configuration (uncomment to enable)
-  # services.nginx = {
-  #   enable = true;
-  #   virtualHosts."example.com" = {
-  #     root = "/var/www/example.com";
-  #   };
-  # };
+  # Enable experimental features for flakes
+  nix.settings.experimental-features = [ "nix-command" "flakes" ];
+
+  # SSH configuration
+  services.openssh = {
+    enable = true;
+    settings = {
+      PasswordAuthentication = false;
+      PermitRootLogin = "yes";
+    };
+  };
+
+  # Basic system configuration
+  system.stateVersion = "25.05";
 
   # Example user configuration (uncomment and customize)
   # users.users.myuser = {
