@@ -5,6 +5,24 @@ locals {
   volume_name = "${var.host_name}-volume"
 }
 
+resource "hcloud_server" "server" {
+  name               = local.server_name
+  image              = "ubuntu-22.04"
+  server_type        = var.server_type
+  location           = var.location
+  ssh_keys           = [hcloud_ssh_key.ssh_public_key.id]
+  backups            = var.enable_backups
+  delete_protection  = var.enable_delete_protection
+  firewall_ids       = [hcloud_firewall.firewall.id]
+
+  labels = var.labels  
+}
+
+resource "hcloud_ssh_key" "ssh_public_key" {
+  name       = local.ssh_key_name
+  public_key = file(var.ssh_public_key_path)
+}
+
 resource "hcloud_firewall" "firewall" {
   name = local.firewall_name
   
@@ -26,11 +44,6 @@ resource "hcloud_firewall" "firewall" {
   }
 }
 
-resource "hcloud_ssh_key" "ssh_public_key" {
-  name       = local.ssh_key_name
-  public_key = file(var.ssh_public_key_path)
-}
-
 resource "hcloud_volume" "volume" {
   count    = var.volume_size != null ? 1 : 0
   name     = local.volume_name
@@ -46,21 +59,7 @@ resource "hcloud_volume_attachment" "volume_attachment" {
   automount = true
 }
 
-resource "hcloud_server" "server" {
-  name               = local.server_name
-  image              = "ubuntu-22.04"
-  server_type        = var.server_type
-  location           = var.location
-  ssh_keys           = [hcloud_ssh_key.ssh_public_key.id]
-  backups            = var.enable_backups
-  delete_protection  = var.enable_delete_protection
-  firewall_ids       = [hcloud_firewall.firewall.id]
-
-  labels = var.labels  
-}
-
 resource "local_file" "nixos_configuration" {
-  
   content = templatefile("${path.module}/nix/configuration.nix.tpl", {
     hostname           = var.host_name
     ssh_public_key     = trimspace(file(var.ssh_public_key_path))
