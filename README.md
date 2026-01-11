@@ -68,6 +68,7 @@ To apply configuration changes:
 
 ```bash
 cd nixos-config
+git add .
 # Edit configuration.nix to add packages, services, users, etc.
 nixos-rebuild switch --flake .#<hostname> --target-host root@<server-ip>
 ```

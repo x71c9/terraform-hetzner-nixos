@@ -56,9 +56,7 @@ resource "hcloud_server" "server" {
   delete_protection  = var.enable_delete_protection
   firewall_ids       = [hcloud_firewall.firewall.id]
 
-  labels = var.labels
-  
-  user_data = md5(join("", [for f in fileset("${path.module}/nix", "**/*.nix") : f != "configuration.nix" ? filemd5("${path.module}/nix/${f}") : ""]))  
+  labels = var.labels  
 }
 
 resource "local_file" "nixos_configuration" {
