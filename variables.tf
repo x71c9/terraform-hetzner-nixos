@@ -21,13 +21,6 @@ variable "enable_delete_protection" {
   default     = false
 }
 
-
-variable "hetzner_cloud_token" {
-  description = "Hetzner Cloud API Token"
-  type        = string
-  sensitive   = true
-}
-
 variable "host_name" {
   description = "Host configuration name"
   type        = string

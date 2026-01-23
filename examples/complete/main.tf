@@ -7,8 +7,10 @@ terraform {
   }
 }
 
+# Authentication: Set HCLOUD_TOKEN environment variable or configure the provider with a token
+# export HCLOUD_TOKEN="your-token-here"
 provider "hcloud" {
-  token = var.hetzner_cloud_token
+  # token = var.hetzner_cloud_token  # Optional: use variable instead of env var
 }
 
 module "nixos_server" {
@@ -37,8 +39,6 @@ module "nixos_server" {
   enable_backups            = true
   enable_delete_protection  = false
 
-
-  hetzner_cloud_token = var.hetzner_cloud_token
   host_name           = "complete-server"
 
   labels = {

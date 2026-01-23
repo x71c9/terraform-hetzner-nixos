@@ -11,10 +11,15 @@ This module automates the deployment of NixOS servers on Hetzner Cloud, which do
 Pin to a specific version:
 
 ```hcl
+# Configure the Hetzner Cloud provider with HCLOUD_TOKEN environment variable
+# export HCLOUD_TOKEN="your-token-here"
+provider "hcloud" {
+  # Authentication via HCLOUD_TOKEN env var
+}
+
 module "nixos_server" {
   source = "git::https://github.com/x71c9/terraform-hetzner-nixos.git?ref=v0.3.1"
-  
-  hetzner_cloud_token = var.hetzner_cloud_token
+
   host_name          = "my-server"
   ssh_public_key_path = "~/.ssh/id_rsa.pub"
 }
@@ -89,11 +94,26 @@ For more configuration options, visit [NixOS Search](https://search.nixos.org/op
 
 ## Module Settings
 
+### Authentication
+
+The module requires the Hetzner Cloud provider to be configured. You can authenticate using either:
+
+1. **Environment Variable (Recommended)**:
+   ```bash
+   export HCLOUD_TOKEN="your-hetzner-token-here"
+   ```
+
+2. **Provider Configuration**:
+   ```hcl
+   provider "hcloud" {
+     token = var.hetzner_cloud_token
+   }
+   ```
+
 ### Required Variables
 
 | Variable | Type | Description |
 |----------|------|-------------|
-| `hetzner_cloud_token` | `string` | Hetzner Cloud API Token (sensitive) |
 | `host_name` | `string` | Host configuration name |
 | `ssh_public_key_path` | `string` | SSH public key file path for accessing the server |
 
@@ -170,10 +190,13 @@ The system is configured for immediate SSH access and supports optional volume a
 ### Example Usage
 
 ```hcl
+# Configure Hetzner Cloud provider
+# export HCLOUD_TOKEN="your-token-here"
+provider "hcloud" {}
+
 module "nixos_server" {
   source = "git::https://github.com/x71c9/terraform-hetzner-nixos.git?ref=v0.3.1"
-  
-  hetzner_cloud_token = var.hetzner_cloud_token
+
   host_name          = "my-server"
   ssh_public_key_path = "~/.ssh/id_rsa.pub"
 }
