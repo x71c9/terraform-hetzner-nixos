@@ -17,11 +17,11 @@ if [ "$VERSION_TYPE" != "patch" ] && [ "$VERSION_TYPE" != "minor" ] && [ "$VERSI
     exit 1
 fi
 
-# Get current version from README.md line 15
-CURRENT_VERSION=$(sed -n '15p' README.md | grep -o 'v[0-9]\+\.[0-9]\+\.[0-9]\+')
+# Get current version from README.md (first occurrence in source line)
+CURRENT_VERSION=$(grep -o 'source = "git::.*?ref=v[0-9]\+\.[0-9]\+\.[0-9]\+"' README.md | head -1 | grep -o 'v[0-9]\+\.[0-9]\+\.[0-9]\+')
 
 if [ -z "$CURRENT_VERSION" ]; then
-    echo "Error: Could not find current version in README.md line 15"
+    echo "Error: Could not find current version in README.md"
     exit 1
 fi
 
