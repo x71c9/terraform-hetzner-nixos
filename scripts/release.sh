@@ -5,6 +5,9 @@
 
 set -e
 
+# Get the directory where this script is located
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+
 if [ $# -eq 0 ]; then
     echo "Usage: $0 [patch|minor|major]"
     exit 1
@@ -73,7 +76,7 @@ echo "Created commit for ${NEW_VERSION}"
 
 # Run merge to master script
 echo "Running merge-to-master.sh..."
-./merge-to-master.sh
+"$SCRIPT_DIR/merge-to-master.sh"
 
 # Create and push tag
 echo "Creating and pushing tag ${NEW_VERSION}..."
