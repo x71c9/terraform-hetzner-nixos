@@ -3,6 +3,25 @@ locals {
   server_name = "${var.host_name}"
   ssh_key_name = "${var.host_name}-ssh-key"
   volume_name = "${var.host_name}-volume"
+
+  # Determine which SSH key ID to use
+  ssh_key_id = var.ssh_key_name != null ? data.hcloud_ssh_key.existing[0].id : hcloud_ssh_key.new[0].id
+
+  # Get the actual SSH public key content for NixOS config
+  ssh_public_key_content = var.ssh_key_name != null ? data.hcloud_ssh_key.existing[0].public_key : trimspace(file(var.ssh_public_key_path))
+}
+
+# Data source for existing SSH key (if ssh_key_name is provided)
+data "hcloud_ssh_key" "existing" {
+  count = var.ssh_key_name != null ? 1 : 0
+  name  = var.ssh_key_name
+}
+
+# Create new SSH key only if ssh_key_name is not provided
+resource "hcloud_ssh_key" "new" {
+  count      = var.ssh_key_name == null ? 1 : 0
+  name       = local.ssh_key_name
+  public_key = file(var.ssh_public_key_path)
 }
 
 resource "hcloud_server" "server" {
@@ -10,17 +29,12 @@ resource "hcloud_server" "server" {
   image              = "ubuntu-22.04"
   server_type        = var.server_type
   location           = var.location
-  ssh_keys           = [hcloud_ssh_key.ssh_public_key.id]
+  ssh_keys           = [local.ssh_key_id]
   backups            = var.enable_backups
   delete_protection  = var.enable_delete_protection
   firewall_ids       = [hcloud_firewall.firewall.id]
 
-  labels = var.labels  
-}
-
-resource "hcloud_ssh_key" "ssh_public_key" {
-  name       = local.ssh_key_name
-  public_key = file(var.ssh_public_key_path)
+  labels = var.labels
 }
 
 resource "hcloud_firewall" "firewall" {
@@ -62,7 +76,7 @@ resource "hcloud_volume_attachment" "volume_attachment" {
 resource "local_file" "nixos_configuration" {
   content = templatefile("${path.module}/nix/configuration.nix.tpl", {
     hostname           = var.host_name
-    ssh_public_key     = trimspace(file(var.ssh_public_key_path))
+    ssh_public_key     = local.ssh_public_key_content
     volume_size        = var.volume_size
     volume_mount_point = var.volume_mount_point
   })
