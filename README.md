@@ -18,7 +18,7 @@ provider "hcloud" {
 }
 
 module "nixos_server" {
-  source = "git::https://github.com/x71c9/terraform-hetzner-nixos.git?ref=v0.5.2"
+  source = "git::https://github.com/x71c9/terraform-hetzner-nixos.git?ref=v0.5.3"
 
   host_name          = "my-server"
   ssh_public_key_path = "~/.ssh/id_rsa.pub"
