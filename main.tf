@@ -3,29 +3,31 @@ locals {
   firewall_name = "${var.host_name}-firewall"
   ssh_key_name  = "${var.host_name}-ssh-key"
   volume_name   = "${var.host_name}-volume"
-  # Determine which SSH key ID to use
-  ssh_key_id = var.ssh_key_id != null ? (
-    var.ssh_key_id
+
+  # Determine which SSH keys to use
+  ssh_key_ids = length(var.ssh_key_ids) > 0 ? (
+    var.ssh_key_ids
   ) : (
-    hcloud_ssh_key.new[0].id
+    [hcloud_ssh_key.new[0].id]
   )
+
   # Get the actual SSH public key content for NixOS config
-  ssh_public_key_content = var.ssh_key_id != null ? (
+  ssh_public_key_content = length(var.ssh_key_ids) > 0 ? (
     data.hcloud_ssh_key.existing[0].public_key
   ) : (
     trimspace(file(var.ssh_public_key_path))
   )
 }
 
-# Data source to get public key from existing SSH key (if ssh_key_id is provided)
+# Data source for existing SSH key (if ssh_key_ids is provided) - only fetch first one for public key
 data "hcloud_ssh_key" "existing" {
-  count = var.ssh_key_id != null ? 1 : 0
-  id    = var.ssh_key_id
+  count = length(var.ssh_key_ids) > 0 ? 1 : 0
+  id    = var.ssh_key_ids[0]
 }
 
-# Create new SSH key only if ssh_key_id is not provided
+# Create new SSH key only if ssh_key_ids is empty
 resource "hcloud_ssh_key" "new" {
-  count      = var.ssh_key_id == null ? 1 : 0
+  count      = length(var.ssh_key_ids) == 0 ? 1 : 0
   name       = local.ssh_key_name
   public_key = file(var.ssh_public_key_path)
 }
@@ -35,7 +37,7 @@ resource "hcloud_server" "server" {
   image             = "ubuntu-22.04"
   server_type       = var.server_type
   location          = var.location
-  ssh_keys          = [local.ssh_key_id]
+  ssh_keys          = local.ssh_key_ids
   backups           = var.enable_backups
   delete_protection = var.enable_delete_protection
   firewall_ids      = [hcloud_firewall.firewall.id]

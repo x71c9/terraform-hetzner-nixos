@@ -18,14 +18,14 @@ output "server_name" {
   value       = hcloud_server.server.name
 }
 
-output "ssh_key_id" {
-  description = "The ID of the SSH key (either existing or newly created)"
-  value       = local.ssh_key_id
+output "ssh_key_ids" {
+  description = "List of SSH key IDs attached to the server"
+  value       = local.ssh_key_ids
 }
 
 output "ssh_key_name" {
-  description = "The name of the SSH key (either existing or newly created)"
-  value       = var.ssh_key_id != null ? data.hcloud_ssh_key.existing[0].name : local.ssh_key_name
+  description = "The name of the SSH key (only for newly created key, null if using existing keys)"
+  value       = length(var.ssh_key_ids) == 0 ? local.ssh_key_name : null
 }
 
 output "firewall_name" {
