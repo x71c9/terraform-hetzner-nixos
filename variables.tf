@@ -52,14 +52,14 @@ variable "server_type" {
   default     = "cx23"
 }
 
-variable "ssh_key_name" {
-  description = "Name of existing SSH key in Hetzner Cloud (if not provided, a new key will be created from ssh_public_key_path)"
+variable "ssh_key_id" {
+  description = "ID of existing SSH key in Hetzner Cloud (if not provided, a new key will be created from ssh_public_key_path)"
   type        = string
   default     = null
 }
 
 variable "ssh_public_key_path" {
-  description = "SSH public key file path for accessing the server (only used if ssh_key_name is not provided)"
+  description = "SSH public key file path for accessing the server (only used if ssh_key_id is not provided)"
   type        = string
 }
 

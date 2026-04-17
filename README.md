@@ -111,7 +111,7 @@ The module requires the Hetzner Cloud provider to be configured. You can authent
 | Variable | Type | Description |
 |----------|------|-------------|
 | `host_name` | `string` | Host configuration name |
-| `ssh_public_key_path` | `string` | SSH public key file path for accessing the server (only used if `ssh_key_name` is not provided) |
+| `ssh_public_key_path` | `string` | SSH public key file path for accessing the server (only used if `ssh_key_id` is not provided) |
 
 ### Optional Variables
 
@@ -124,7 +124,7 @@ The module requires the Hetzner Cloud provider to be configured. You can authent
 | `labels` | `map(string)` | `{}` | Additional labels for the server |
 | `location` | `string` | `"nbg1"` | Hetzner Cloud location ([available locations](https://registry.terraform.io/providers/hetznercloud/hcloud/latest/docs/resources/server#location-1)) |
 | `server_type` | `string` | `"cx23"` | Hetzner Cloud server type ([available types](https://registry.terraform.io/providers/hetznercloud/hcloud/latest/docs/resources/server#server_type-1)) |
-| `ssh_key_name` | `string` | `null` | Name of existing SSH key in Hetzner Cloud. If provided, the module will use this existing key instead of creating a new one (useful for deploying multiple servers with the same SSH key) |
+| `ssh_key_id` | `string` | `null` | ID of existing SSH key in Hetzner Cloud. If provided, the module will use this existing key instead of creating a new one (useful for deploying multiple servers with the same SSH key) |
 | `ssh_private_key_path` | `string` | `""` | SSH private key file path for accessing the server |
 | `volume_size` | `number` | `null` | Size of the additional volume in GB (optional) |
 | `volume_mount_point` | `string` | `"/mnt/data"` | Mount point for the additional volume (only used if volume_size is set) |
@@ -229,7 +229,7 @@ module "web_server" {
   source = "git::https://github.com/x71c9/terraform-hetzner-nixos.git?ref=vX.Y.Z"
 
   host_name           = "web-server"
-  ssh_key_name        = hcloud_ssh_key.shared.name
+  ssh_key_id          = hcloud_ssh_key.shared.id
   ssh_public_key_path = "~/.ssh/id_rsa.pub"
 }
 
@@ -237,7 +237,7 @@ module "db_server" {
   source = "git::https://github.com/x71c9/terraform-hetzner-nixos.git?ref=vX.Y.Z"
 
   host_name           = "db-server"
-  ssh_key_name        = hcloud_ssh_key.shared.name
+  ssh_key_id          = hcloud_ssh_key.shared.id
   ssh_public_key_path = "~/.ssh/id_rsa.pub"
   volume_size         = 100
 }

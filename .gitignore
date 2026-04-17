@@ -6,6 +6,7 @@ result
 *.tfstate.*
 *.tfvars
 .env
+.direnv
 
 # Generated configuration file (created by terraform template)
 nix/configuration.nix

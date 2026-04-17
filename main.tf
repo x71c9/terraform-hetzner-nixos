@@ -1,52 +1,58 @@
 locals {
+  server_name   = var.host_name
   firewall_name = "${var.host_name}-firewall"
-  server_name = "${var.host_name}"
-  ssh_key_name = "${var.host_name}-ssh-key"
-  volume_name = "${var.host_name}-volume"
-
+  ssh_key_name  = "${var.host_name}-ssh-key"
+  volume_name   = "${var.host_name}-volume"
   # Determine which SSH key ID to use
-  ssh_key_id = var.ssh_key_name != null ? data.hcloud_ssh_key.existing[0].id : hcloud_ssh_key.new[0].id
-
+  ssh_key_id = var.ssh_key_id != null ? (
+    var.ssh_key_id
+  ) : (
+    hcloud_ssh_key.new[0].id
+  )
   # Get the actual SSH public key content for NixOS config
-  ssh_public_key_content = var.ssh_key_name != null ? data.hcloud_ssh_key.existing[0].public_key : trimspace(file(var.ssh_public_key_path))
+  ssh_public_key_content = var.ssh_key_id != null ? (
+    data.hcloud_ssh_key.existing[0].public_key
+  ) : (
+    trimspace(file(var.ssh_public_key_path))
+  )
 }
 
-# Data source for existing SSH key (if ssh_key_name is provided)
+# Data source to get public key from existing SSH key (if ssh_key_id is provided)
 data "hcloud_ssh_key" "existing" {
-  count = var.ssh_key_name != null ? 1 : 0
-  name  = var.ssh_key_name
+  count = var.ssh_key_id != null ? 1 : 0
+  id    = var.ssh_key_id
 }
 
-# Create new SSH key only if ssh_key_name is not provided
+# Create new SSH key only if ssh_key_id is not provided
 resource "hcloud_ssh_key" "new" {
-  count      = var.ssh_key_name == null ? 1 : 0
+  count      = var.ssh_key_id == null ? 1 : 0
   name       = local.ssh_key_name
   public_key = file(var.ssh_public_key_path)
 }
 
 resource "hcloud_server" "server" {
-  name               = local.server_name
-  image              = "ubuntu-22.04"
-  server_type        = var.server_type
-  location           = var.location
-  ssh_keys           = [local.ssh_key_id]
-  backups            = var.enable_backups
-  delete_protection  = var.enable_delete_protection
-  firewall_ids       = [hcloud_firewall.firewall.id]
+  name              = local.server_name
+  image             = "ubuntu-22.04"
+  server_type       = var.server_type
+  location          = var.location
+  ssh_keys          = [local.ssh_key_id]
+  backups           = var.enable_backups
+  delete_protection = var.enable_delete_protection
+  firewall_ids      = [hcloud_firewall.firewall.id]
 
   labels = var.labels
 }
 
 resource "hcloud_firewall" "firewall" {
   name = local.firewall_name
-  
+
   rule {
     direction  = "in"
     port       = "22"
     protocol   = "tcp"
     source_ips = ["0.0.0.0/0", "::/0"]
   }
-  
+
   dynamic "rule" {
     for_each = var.additional_firewall_rules
     content {
@@ -85,11 +91,11 @@ resource "local_file" "nixos_configuration" {
 
 resource "null_resource" "nixos_deployment" {
   depends_on = [hcloud_server.server, local_file.nixos_configuration]
-  
+
   triggers = {
     server_id = hcloud_server.server.id
   }
-  
+
   provisioner "local-exec" {
     command = <<-EOF
       set -e  # Exit on any error
@@ -139,7 +145,7 @@ resource "null_resource" "nixos_deployment" {
       
       echo "SUCCESS: NixOS deployment completed"
     EOF
-    
+
     working_dir = path.cwd
   }
 }
@@ -167,7 +173,7 @@ resource "null_resource" "download_nixos_config" {
       echo "NixOS configuration downloaded to ./nixos-config/"
       echo "To manage your server, run: nixos-rebuild switch --flake ./nixos-config#${var.host_name} --target-host root@${hcloud_server.server.ipv4_address}"
     EOF
-    
+
     working_dir = path.cwd
   }
 

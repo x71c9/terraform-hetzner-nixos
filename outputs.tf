@@ -25,7 +25,7 @@ output "ssh_key_id" {
 
 output "ssh_key_name" {
   description = "The name of the SSH key (either existing or newly created)"
-  value       = var.ssh_key_name != null ? var.ssh_key_name : local.ssh_key_name
+  value       = var.ssh_key_id != null ? data.hcloud_ssh_key.existing[0].name : local.ssh_key_name
 }
 
 output "firewall_name" {
