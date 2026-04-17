@@ -19,13 +19,13 @@ output "server_name" {
 }
 
 output "ssh_key_id" {
-  description = "The ID of the SSH key created"
-  value       = hcloud_ssh_key.ssh_public_key.id
+  description = "The ID of the SSH key (either existing or newly created)"
+  value       = local.ssh_key_id
 }
 
 output "ssh_key_name" {
-  description = "The name of the SSH key created"
-  value       = hcloud_ssh_key.ssh_public_key.name
+  description = "The name of the SSH key (either existing or newly created)"
+  value       = var.ssh_key_name != null ? var.ssh_key_name : local.ssh_key_name
 }
 
 output "firewall_name" {
