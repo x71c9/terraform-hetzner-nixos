@@ -8,7 +8,7 @@ This module automates the deployment of NixOS servers on Hetzner Cloud, which do
 
 ## Usage
 
-Pin to a specific version:
+Pin to a specific version using the releases page:
 
 ```hcl
 # Configure the Hetzner Cloud provider with HCLOUD_TOKEN environment variable
@@ -18,14 +18,12 @@ provider "hcloud" {
 }
 
 module "nixos_server" {
-  source = "git::https://github.com/x71c9/terraform-hetzner-nixos.git?ref=v0.5.0"
+  source = "git::https://github.com/x71c9/terraform-hetzner-nixos.git?ref=vX.Y.Z"
 
   host_name          = "my-server"
   ssh_public_key_path = "~/.ssh/id_rsa.pub"
 }
 ```
-
-### Available Versions
 
 Check the [releases page](https://github.com/x71c9/terraform-hetzner-nixos/releases) for all available versions.
 
@@ -115,7 +113,7 @@ The module requires the Hetzner Cloud provider to be configured. You can authent
 | Variable | Type | Description |
 |----------|------|-------------|
 | `host_name` | `string` | Host configuration name |
-| `ssh_public_key_path` | `string` | SSH public key file path for accessing the server |
+| `ssh_public_key_path` | `string` | SSH public key file path for accessing the server (only used if `ssh_key_name` is not provided) |
 
 ### Optional Variables
 
@@ -128,6 +126,7 @@ The module requires the Hetzner Cloud provider to be configured. You can authent
 | `labels` | `map(string)` | `{}` | Additional labels for the server |
 | `location` | `string` | `"nbg1"` | Hetzner Cloud location ([available locations](https://registry.terraform.io/providers/hetznercloud/hcloud/latest/docs/resources/server#location-1)) |
 | `server_type` | `string` | `"cx23"` | Hetzner Cloud server type ([available types](https://registry.terraform.io/providers/hetznercloud/hcloud/latest/docs/resources/server#server_type-1)) |
+| `ssh_key_name` | `string` | `null` | Name of existing SSH key in Hetzner Cloud. If provided, the module will use this existing key instead of creating a new one (useful for deploying multiple servers with the same SSH key) |
 | `ssh_private_key_path` | `string` | `""` | SSH private key file path for accessing the server |
 | `volume_size` | `number` | `null` | Size of the additional volume in GB (optional) |
 | `volume_mount_point` | `string` | `"/mnt/data"` | Mount point for the additional volume (only used if volume_size is set) |
@@ -189,13 +188,15 @@ The system is configured for immediate SSH access and supports optional volume a
 
 ### Example Usage
 
+#### Single Server Deployment
+
 ```hcl
 # Configure Hetzner Cloud provider
 # export HCLOUD_TOKEN="your-token-here"
 provider "hcloud" {}
 
 module "nixos_server" {
-  source = "git::https://github.com/x71c9/terraform-hetzner-nixos.git?ref=v0.5.0"
+  source = "git::https://github.com/x71c9/terraform-hetzner-nixos.git?ref=vX.Y.Z"
 
   host_name          = "my-server"
   ssh_public_key_path = "~/.ssh/id_rsa.pub"
@@ -207,5 +208,47 @@ output "server_public_ip" {
 
 output "ssh_command" {
   value = "ssh root@${module.nixos_server.server_ip}"
+}
+```
+
+#### Multiple Servers with Shared SSH Key
+
+When deploying multiple servers, you can create a single SSH key and share it across all instances to avoid duplication:
+
+```hcl
+# Configure Hetzner Cloud provider
+# export HCLOUD_TOKEN="your-token-here"
+provider "hcloud" {}
+
+# Create a shared SSH key once
+resource "hcloud_ssh_key" "shared" {
+  name       = "shared-nixos-key"
+  public_key = file("~/.ssh/id_rsa.pub")
+}
+
+# Deploy multiple servers using the shared key
+module "web_server" {
+  source = "git::https://github.com/x71c9/terraform-hetzner-nixos.git?ref=vX.Y.Z"
+
+  host_name           = "web-server"
+  ssh_key_name        = hcloud_ssh_key.shared.name
+  ssh_public_key_path = "~/.ssh/id_rsa.pub"
+}
+
+module "db_server" {
+  source = "git::https://github.com/x71c9/terraform-hetzner-nixos.git?ref=vX.Y.Z"
+
+  host_name           = "db-server"
+  ssh_key_name        = hcloud_ssh_key.shared.name
+  ssh_public_key_path = "~/.ssh/id_rsa.pub"
+  volume_size         = 100
+}
+
+output "web_server_ip" {
+  value = module.web_server.server_ip
+}
+
+output "db_server_ip" {
+  value = module.db_server.server_ip
 }
 ```
