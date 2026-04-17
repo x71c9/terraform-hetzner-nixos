@@ -56,8 +56,9 @@ esac
 
 echo "New version: $NEW_VERSION"
 
-# Update README.md - replace version in both example blocks
-sed -i "s|${CURRENT_VERSION}|${NEW_VERSION}|g" README.md
+# Update README.md - replace version only in the first (Usage section) occurrence
+# This uses sed to replace only the first match, leaving vX.Y.Z placeholders in examples
+sed -i "0,/${CURRENT_VERSION}/s|${CURRENT_VERSION}|${NEW_VERSION}|" README.md
 
 echo "Updated version references in README.md"
 
