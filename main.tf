@@ -157,21 +157,29 @@ resource "null_resource" "download_nixos_config" {
 
   provisioner "local-exec" {
     command = <<EOF
+      set -euo pipefail
+
       # Create nixos-config directory
       mkdir -p nixos-config
-      
-      # Download the specific git tag version
-      TAG_VERSION=$(git -C ${path.module} describe --tags --exact-match HEAD 2>/dev/null || echo "develop")
-      
-      # Download actual files from git repository
-      curl -s -L "https://raw.githubusercontent.com/x71c9/terraform-hetzner-nixos/$TAG_VERSION/nix/disko.nix" -o nixos-config/disko.nix
-      curl -s -L "https://raw.githubusercontent.com/x71c9/terraform-hetzner-nixos/$TAG_VERSION/nix/hardware-configuration.nix" -o nixos-config/hardware-configuration.nix
-      curl -s -L "https://raw.githubusercontent.com/x71c9/terraform-hetzner-nixos/$TAG_VERSION/nix/flake.nix" -o nixos-config/flake.nix
-      curl -s -L "https://raw.githubusercontent.com/x71c9/terraform-hetzner-nixos/$TAG_VERSION/tmpl/configuration.nix" -o nixos-config/configuration.nix
-      
+
+      # Use the commit SHA from the module directory as the download ref.
+      # `git describe --tags --exact-match` fails in Terraform's cached module
+      # dir because tag refs are not preserved after `terraform init`. Using the
+      # commit SHA works reliably since GitHub serves raw files by SHA too, and
+      # it always matches the exact version that was checked out.
+      COMMIT_SHA=$(git -C ${path.module} rev-parse HEAD)
+      echo "Downloading NixOS config files at commit $COMMIT_SHA"
+
+      # --fail makes curl exit non-zero on HTTP 4xx/5xx so bad responses are
+      # never silently written as file content.
+      curl -fsSL "https://raw.githubusercontent.com/x71c9/terraform-hetzner-nixos/$COMMIT_SHA/nix/disko.nix" -o nixos-config/disko.nix
+      curl -fsSL "https://raw.githubusercontent.com/x71c9/terraform-hetzner-nixos/$COMMIT_SHA/nix/hardware-configuration.nix" -o nixos-config/hardware-configuration.nix
+      curl -fsSL "https://raw.githubusercontent.com/x71c9/terraform-hetzner-nixos/$COMMIT_SHA/nix/flake.nix" -o nixos-config/flake.nix
+      curl -fsSL "https://raw.githubusercontent.com/x71c9/terraform-hetzner-nixos/$COMMIT_SHA/tmpl/configuration.nix" -o nixos-config/configuration.nix
+
       # Replace placeholders in the downloaded files
       sed -i 's/HOSTNAME/${var.host_name}/g' nixos-config/flake.nix nixos-config/configuration.nix
-      
+
       echo "NixOS configuration downloaded to ./nixos-config/"
       echo "To manage your server, run: nixos-rebuild switch --flake ./nixos-config#${var.host_name} --target-host root@${hcloud_server.server.ipv4_address}"
     EOF
