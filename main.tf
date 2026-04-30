@@ -7,14 +7,14 @@ locals {
   # Determine which SSH keys to use
   ssh_key_ids = length(var.ssh_key_ids) > 0 ? (
     var.ssh_key_ids
-  ) : (
+    ) : (
     [hcloud_ssh_key.new[0].id]
   )
 
   # Get the actual SSH public key content for NixOS config
   ssh_public_key_content = length(var.ssh_key_ids) > 0 ? (
     data.hcloud_ssh_key.existing[0].public_key
-  ) : (
+    ) : (
     trimspace(file(var.ssh_public_key_path))
   )
 }
@@ -39,7 +39,7 @@ resource "hcloud_server" "server" {
   location          = var.location
   ssh_keys          = local.ssh_key_ids
   backups           = var.enable_backups
-  delete_protection = var.enable_delete_protection
+  delete_protection = var.enable_server_delete_protection
   firewall_ids      = [hcloud_firewall.firewall.id]
 
   labels = var.labels
@@ -72,6 +72,8 @@ resource "hcloud_volume" "volume" {
   size     = var.volume_size
   location = var.location
   format   = "xfs"
+
+  delete_protection = var.enable_volume_delete_protection
 }
 
 resource "hcloud_volume_attachment" "volume_attachment" {

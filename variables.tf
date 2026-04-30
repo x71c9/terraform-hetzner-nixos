@@ -15,8 +15,8 @@ variable "enable_backups" {
   default     = false
 }
 
-variable "enable_delete_protection" {
-  description = "Enable delete protection (recommended for production)"
+variable "enable_server_delete_protection" {
+  description = "Enable delete protection for the server (recommended for production)"
   type        = bool
   default     = false
 }
@@ -80,6 +80,12 @@ variable "volume_mount_point" {
   description = "Mount point for the additional volume (only used if volume_size is set)"
   type        = string
   default     = "/mnt/data"
+}
+
+variable "enable_volume_delete_protection" {
+  description = "Enable delete protection for the volume (recommended for production)"
+  type        = bool
+  default     = false
 }
 
 variable "download_nixos_config" {

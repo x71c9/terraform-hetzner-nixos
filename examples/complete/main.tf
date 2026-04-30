@@ -35,25 +35,26 @@ module "nixos_server" {
       source_ips = ["0.0.0.0/0", "::/0"]
     }
   ]
-  
-  enable_backups            = true
-  enable_delete_protection  = false
 
-  host_name           = "complete-server"
+  enable_backups                  = true
+  enable_server_delete_protection = false
+  enable_volume_delete_protection = false
+
+  host_name = "complete-server"
 
   labels = {
     environment = "example"
     project     = "terraform-hetzner-nixos"
     example     = "complete"
   }
-  
+
   location = "nbg1"
 
   server_type = "cx33"
 
   ssh_private_key_path = var.ssh_private_key_path
   ssh_public_key_path  = var.ssh_public_key_path
-  
+
   volume_mount_point = "/var/lib/data"
   volume_size        = 21
 }
