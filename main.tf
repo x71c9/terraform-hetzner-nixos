@@ -164,20 +164,42 @@ resource "null_resource" "download_nixos_config" {
       # Create nixos-config directory
       mkdir -p nixos-config
 
-      # Use the commit SHA from the module directory as the download ref.
-      # `git describe --tags --exact-match` fails in Terraform's cached module
-      # dir because tag refs are not preserved after `terraform init`. Using the
-      # commit SHA works reliably since GitHub serves raw files by SHA too, and
-      # it always matches the exact version that was checked out.
-      COMMIT_SHA=$(git -C ${path.module} rev-parse HEAD)
-      echo "Downloading NixOS config files at commit $COMMIT_SHA"
+      # Resolve the GitHub ref to download from.
+      #
+      # Priority:
+      #   1. Tag pointing at HEAD in the module clone (set by `terraform init`
+      #      when the source uses `?ref=vX.Y.Z`).
+      #   2. The ?ref= value recorded in .terraform/modules/modules.json, which
+      #      Terraform always writes and which contains the exact source URL.
+      #   3. Commit SHA as a last resort (works only for commits reachable from
+      #      a public branch on GitHub; fails for shallow/detached checkouts on
+      #      private or unreleased commits).
+      #
+      # Using a tag or named ref is preferred because GitHub's raw content CDN
+      # serves those reliably. A bare commit SHA returns 404 unless the commit
+      # is reachable from a public branch or tag.
+      GITHUB_REF=$(git -C ${path.module} tag --points-at HEAD 2>/dev/null | head -1)
+
+      if [ -z "$GITHUB_REF" ]; then
+        MODULES_JSON="${path.cwd}/.terraform/modules/modules.json"
+        if [ -f "$MODULES_JSON" ]; then
+          # Extract the ?ref= value from the source URL recorded for this module.
+          GITHUB_REF=$(grep -o '?ref=[^"]*' "$MODULES_JSON" | head -1 | sed 's/?ref=//')
+        fi
+      fi
+
+      if [ -z "$GITHUB_REF" ]; then
+        GITHUB_REF=$(git -C ${path.module} rev-parse HEAD)
+      fi
+
+      echo "Downloading NixOS config files at ref $GITHUB_REF"
 
       # --fail makes curl exit non-zero on HTTP 4xx/5xx so bad responses are
       # never silently written as file content.
-      curl -fsSL "https://raw.githubusercontent.com/x71c9/terraform-hetzner-nixos/$COMMIT_SHA/nix/disko.nix" -o nixos-config/disko.nix
-      curl -fsSL "https://raw.githubusercontent.com/x71c9/terraform-hetzner-nixos/$COMMIT_SHA/nix/hardware-configuration.nix" -o nixos-config/hardware-configuration.nix
-      curl -fsSL "https://raw.githubusercontent.com/x71c9/terraform-hetzner-nixos/$COMMIT_SHA/nix/flake.nix" -o nixos-config/flake.nix
-      curl -fsSL "https://raw.githubusercontent.com/x71c9/terraform-hetzner-nixos/$COMMIT_SHA/tmpl/configuration.nix" -o nixos-config/configuration.nix
+      curl -fsSL "https://raw.githubusercontent.com/x71c9/terraform-hetzner-nixos/$GITHUB_REF/nix/disko.nix" -o nixos-config/disko.nix
+      curl -fsSL "https://raw.githubusercontent.com/x71c9/terraform-hetzner-nixos/$GITHUB_REF/nix/hardware-configuration.nix" -o nixos-config/hardware-configuration.nix
+      curl -fsSL "https://raw.githubusercontent.com/x71c9/terraform-hetzner-nixos/$GITHUB_REF/nix/flake.nix" -o nixos-config/flake.nix
+      curl -fsSL "https://raw.githubusercontent.com/x71c9/terraform-hetzner-nixos/$GITHUB_REF/tmpl/configuration.nix" -o nixos-config/configuration.nix
 
       # Replace placeholders in the downloaded files
       sed -i 's/HOSTNAME/${var.host_name}/g' nixos-config/flake.nix nixos-config/configuration.nix
