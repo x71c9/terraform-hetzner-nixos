@@ -178,7 +178,15 @@ resource "null_resource" "download_nixos_config" {
       # Using a tag or named ref is preferred because GitHub's raw content CDN
       # serves those reliably. A bare commit SHA returns 404 unless the commit
       # is reachable from a public branch or tag.
-      GITHUB_REF=$(git -C ${path.module} tag --points-at HEAD 2>/dev/null | head -1)
+      #
+      # Guard: only query git if path.module has its own .git directory.
+      # Without this check, git walks up to the caller's repo root and returns
+      # that repo's tags instead (e.g. when Terraform unpacks the module as a
+      # plain directory inside .terraform/modules/ with no .git of its own).
+      GITHUB_REF=""
+      if [ -d "${path.module}/.git" ]; then
+        GITHUB_REF=$(git -C ${path.module} tag --points-at HEAD 2>/dev/null | head -1)
+      fi
 
       if [ -z "$GITHUB_REF" ]; then
         MODULES_JSON="${path.cwd}/.terraform/modules/modules.json"
@@ -188,7 +196,7 @@ resource "null_resource" "download_nixos_config" {
         fi
       fi
 
-      if [ -z "$GITHUB_REF" ]; then
+      if [ -z "$GITHUB_REF" ] && [ -d "${path.module}/.git" ]; then
         GITHUB_REF=$(git -C ${path.module} rev-parse HEAD)
       fi
 
