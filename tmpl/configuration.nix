@@ -20,6 +20,12 @@
     ./hardware-configuration.nix
     ./disko.nix
   ];
+
+  # CVE-2026-31431 "Copy Fail" — algif_aead LPE, CVSS 7.8
+  # Upstream fix: revert a664bf3d603d (not yet in NixOS 25.11 kernel 6.12)
+  # TODO: once nixpkgs 25.11 backports the fix, remove this and pin/upgrade
+  #       the kernel: https://github.com/theori-io/copy-fail-CVE-2026-31431/issues/48
+  boot.blacklistedKernelModules = [ "algif_aead" ];
   # Basic packages - add your own here
   environment.systemPackages = with pkgs; [
     vim
