@@ -38,8 +38,9 @@ resource "hcloud_server" "server" {
   server_type       = var.server_type
   location          = var.location
   ssh_keys          = local.ssh_key_ids
-  backups           = var.enable_backups
-  delete_protection = var.enable_server_delete_protection
+  backups             = var.enable_backups
+  delete_protection   = var.enable_server_delete_protection
+  rebuild_protection  = var.enable_server_delete_protection
   firewall_ids      = [hcloud_firewall.firewall.id]
 
   labels = var.labels
