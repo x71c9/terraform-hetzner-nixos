@@ -25,7 +25,7 @@ variable "ssh_private_key_path" {
 }
 
 module "nixos_server" {
-  source = "../.."
+  source               = "../.."
   ssh_public_key_path  = var.ssh_public_key_path
   ssh_private_key_path = var.ssh_private_key_path
   host_name            = "nixos-server"

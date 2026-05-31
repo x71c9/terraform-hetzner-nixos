@@ -8,5 +8,9 @@ result
 .env
 .direnv
 
-# Generated configuration file (created by terraform template)
-nix/configuration.nix
+# Per-host generated flake directories (created by terraform local_file)
+nix/.generated/
+.generated/
+
+# Per-host downloaded NixOS config (created by download_nixos_config)
+nixos-config/

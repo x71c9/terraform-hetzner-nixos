@@ -3,8 +3,10 @@
     disk = {
       main = {
         type = "disk";
-        # Use the main system disk - let terraform dynamically detect and update this
-        device = "/dev/sda";
+        # The main system disk. The deployment provisioner detects the real
+        # device over SSH at deploy time and substitutes __DISK_DEVICE__ in the
+        # per-host generated copy of this file (never this source template).
+        device = "__DISK_DEVICE__";
         content = {
           type = "gpt";
           partitions = {

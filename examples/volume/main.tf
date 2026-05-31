@@ -26,12 +26,12 @@ variable "ssh_private_key_path" {
 
 
 module "nixos_server" {
-  source = "../.."
-  host_name           = "server-with-volume"
+  source               = "../.."
+  host_name            = "server-with-volume"
   ssh_private_key_path = var.ssh_private_key_path
   ssh_public_key_path  = var.ssh_public_key_path
-  volume_mount_point = "/var/lib/data"
-  volume_size        = 20
+  volume_mount_point   = "/var/lib/data"
+  volume_size          = 20
 }
 
 output "server_ip" {

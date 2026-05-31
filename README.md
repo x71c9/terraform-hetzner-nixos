@@ -55,7 +55,7 @@ terraform apply
 
 ## Post-Deployment
 
-After initial deployment, the module automatically downloads NixOS configuration files to `./nixos-config/` (unless `download_nixos_config = false`).
+After initial deployment, the module automatically downloads NixOS configuration files to `./nixos-config/<hostname>/` (unless `download_nixos_config = false`). Each module instance writes to its own per-host subdirectory, so deploying multiple servers from the same configuration never causes the downloaded configs to clobber each other.
 
 ### Managing Your Server
 
@@ -68,10 +68,10 @@ The downloaded configuration includes:
 To apply configuration changes:
 
 ```bash
-cd nixos-config
+cd nixos-config/<hostname>
 git add .
 # Edit configuration.nix to add packages, services, users, etc.
-nixos-rebuild switch --flake .#<hostname> --target-host root@<server-ip>
+nixos-rebuild switch --flake .#default --target-host root@<server-ip>
 ```
 
 This is a starting point to update the remote machine, the `configuration.nix` file is intended to be replaced with future update of the machine.\ 
@@ -79,7 +79,7 @@ The other files ensure the hardware configuration of the machine.
 
 ### Customizing Your Configuration
 
-Edit `nixos-config/configuration.nix` to:
+Edit `nixos-config/<hostname>/configuration.nix` to:
 - Add packages to `environment.systemPackages`
 - Configure services (nginx, postgresql, etc.)
 - Set up users and SSH keys
