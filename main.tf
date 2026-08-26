@@ -51,6 +51,13 @@ resource "hcloud_server" "server" {
   firewall_ids       = [hcloud_firewall.firewall.id]
 
   labels = var.labels
+
+  lifecycle {
+    # ssh_keys are only consumed at server creation and are not reported back by
+    # the Hetzner API. Ignoring them prevents a forced replacement (disk wipe) when
+    # the key resource is recreated, e.g. after moving the server between projects.
+    ignore_changes = [ssh_keys]
+  }
 }
 
 resource "hcloud_firewall" "firewall" {
