@@ -1,3 +1,5 @@
+
+
 # Terraform Hetzner NixOS
 
 A Terraform module for deploying NixOS servers on Hetzner Cloud infrastructure.
@@ -69,8 +71,8 @@ To apply configuration changes:
 
 ```bash
 cd nixos-config/<hostname>
-git add .
 # Edit configuration.nix to add packages, services, users, etc.
+git add .
 nixos-rebuild switch --flake .#default --target-host root@<server-ip>
 ```
 
