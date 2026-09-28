@@ -1,5 +1,5 @@
 variable "additional_firewall_rules" {
-  description = "Additional firewall rules beyond SSH (22)"
+  description = "Additional firewall rules (SSH 22 is controlled by enable_ssh_rule)"
   type = list(object({
     direction  = string
     port       = optional(string)
@@ -19,6 +19,12 @@ variable "enable_server_delete_protection" {
   description = "Enable delete protection for the server (recommended for production)"
   type        = bool
   default     = false
+}
+
+variable "enable_ssh_rule" {
+  description = "Allow public SSH (tcp 22) in the Hetzner firewall. Required while installing or reinstalling the server over SSH; set to false for hosts reached only through a VPN."
+  type        = bool
+  default     = true
 }
 
 variable "host_name" {

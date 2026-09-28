@@ -63,11 +63,16 @@ resource "hcloud_server" "server" {
 resource "hcloud_firewall" "firewall" {
   name = local.firewall_name
 
-  rule {
-    direction  = "in"
-    port       = "22"
-    protocol   = "tcp"
-    source_ips = ["0.0.0.0/0", "::/0"]
+  # Public SSH (22). Needed by the initial install and any reinstall over
+  # SSH; hosts reached only through a VPN (e.g. Tailscale) can drop it.
+  dynamic "rule" {
+    for_each = var.enable_ssh_rule ? [1] : []
+    content {
+      direction  = "in"
+      port       = "22"
+      protocol   = "tcp"
+      source_ips = ["0.0.0.0/0", "::/0"]
+    }
   }
 
   dynamic "rule" {

@@ -116,10 +116,11 @@ The module requires the Hetzner Cloud provider to be configured. You can authent
 
 | Variable | Type | Default | Description |
 |----------|------|---------|-------------|
-| `additional_firewall_rules` | `list(object)` | `[]` | Additional firewall rules beyond SSH (22). Objects contain: `direction`, `port` (optional), `protocol`, `source_ips` |
+| `additional_firewall_rules` | `list(object)` | `[]` | Additional firewall rules (SSH 22 is controlled by `enable_ssh_rule`). Objects contain: `direction`, `port` (optional), `protocol`, `source_ips` |
 | `download_nixos_config` | `bool` | `true` | Download NixOS configuration files to local nixos-config/ directory for easy nixos-rebuild usage |
 | `enable_backups` | `bool` | `false` | Enable automatic backups |
 | `enable_delete_protection` | `bool` | `false` | Enable delete protection (recommended for production) |
+| `enable_ssh_rule` | `bool` | `true` | Allow public SSH (tcp 22) in the Hetzner firewall. Required while installing or reinstalling the server over SSH; `false` for hosts reached only through a VPN (see [Public SSH](#public-ssh)) |
 | `labels` | `map(string)` | `{}` | Additional labels for the server |
 | `location` | `string` | `"nbg1"` | Hetzner Cloud location ([available locations](https://registry.terraform.io/providers/hetznercloud/hcloud/latest/docs/resources/server#location-1)) |
 | `server_type` | `string` | `"cx23"` | Hetzner Cloud server type ([available types](https://registry.terraform.io/providers/hetznercloud/hcloud/latest/docs/resources/server#server_type-1)) |
@@ -128,6 +129,12 @@ The module requires the Hetzner Cloud provider to be configured. You can authent
 | `ssh_public_key_path` | `string` | `null` | SSH public key file path for accessing the server (only used if `ssh_key_ids` is empty) |
 | `volume_size` | `number` | `null` | Size of the additional volume in GB (optional) |
 | `volume_mount_point` | `string` | `"/mnt/data"` | Mount point for the additional volume (only used if volume_size is set) |
+
+### Public SSH
+
+The firewall allows tcp 22 from anywhere by default (`enable_ssh_rule = true`), because the initial NixOS install and any reinstall connect over public SSH. For a host managed only through a VPN (Tailscale, WireGuard) once installed, `enable_ssh_rule = false` removes the rule, and the server is reachable on 22 only through the VPN. A later reinstall (a new server IP re-runs the install) needs `enable_ssh_rule = true` again for that apply.
+
+Without the SSH rule and without `additional_firewall_rules`, the firewall has no inbound rule and blocks all inbound traffic.
 
 ### Firewall Rules Format
 
@@ -177,7 +184,7 @@ The module uses `.nix.tpl` template files to dynamically inject hostname and SSH
 The deployed NixOS system includes:
 
 - **Base System**: NixOS 25.05 with experimental features (nix-command, flakes) enabled
-- **Security**: SSH-only root access with password authentication disabled, firewall enabled (port 22 only)
+- **Security**: SSH-only root access with password authentication disabled, firewall enabled (port 22 only, see `enable_ssh_rule`)
 - **Essential Tools**: vim, curl, git pre-installed
 - **Volume Support**: Automatic detection and mounting of Hetzner Cloud volumes using systemd service
 - **Template Variables**: Dynamic hostname and SSH key injection via Terraform templating
